@@ -63,6 +63,22 @@ const STEPS = {
   },
 };
 
+// Validation rules per field
+const VALIDATORS = {
+  name:      v => v.trim().length < 1 ? '이름을 입력해주세요.' : '',
+  year:      v => !v ? '태어난 연도를 선택해주세요.' : '',
+  gender:    v => !v ? '성별을 선택해주세요.' : '',
+  phone:     v => !/^010-\d{4}-\d{4}$/.test(v) ? '올바른 형식으로 입력해주세요. (예: 010-1234-5678)' : '',
+  school:    v => v.trim().length < 1 ? '학교명을 입력해주세요.' : '',
+  major:     v => v.trim().length < 1 ? '학과를 입력해주세요.' : '',
+  studentId: v => !/^\d{6,10}$/.test(v) ? '숫자로 된 학번을 입력해주세요. (6~10자리)' : '',
+  depositor: v => v.trim().length < 1 ? '입금자명을 입력해주세요.' : '',
+  mbti:      v => !/^[EI][NS][TF][JP]$/i.test(v) ? 'MBTI를 올바르게 입력해주세요. (예: INFP)' : '',
+  height:    v => !/^\d{2,3}(cm)?$/.test(v.trim()) ? '키를 숫자로 입력해주세요. (예: 170 또는 170cm)' : '',
+  payment:   v => !v ? '입금 완료 버튼을 눌러주세요.' : '',
+  photo:     () => '',
+};
+
 const DropdownIcon = () => (
   <svg width="11" height="6" viewBox="0 0 11 6" fill="none">
     <path d="M1 1L5.5 5L10 1" stroke="#b0b0b0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -86,6 +102,19 @@ const GenderIcon = ({ type }) => (
   </svg>
 );
 
+// Inline error message component
+const ErrorMsg = ({ msg }) =>
+  msg ? (
+    <p style={{ marginTop: 6, fontSize: 13, color: '#ff3b30', letterSpacing: -0.26, display: 'flex', alignItems: 'center', gap: 4 }}>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+        <circle cx="7" cy="7" r="6.5" stroke="#ff3b30"/>
+        <line x1="7" y1="4" x2="7" y2="8" stroke="#ff3b30" strokeWidth="1.5" strokeLinecap="round"/>
+        <circle cx="7" cy="10.5" r="0.75" fill="#ff3b30"/>
+      </svg>
+      {msg}
+    </p>
+  ) : null;
+
 export default function Profile() {
   const navigate = useNavigate();
   const { step } = useParams();
@@ -97,28 +126,71 @@ export default function Profile() {
     phone: '', school: '', major: '',
     studentId: '', depositor: '',
     mbti: '', height: '',
+    payment: '', photo: '',
   });
 
-  const set = (k, v) => setValues(p => ({ ...p, [k]: v }));
+  // Track which fields the user has blurred or submitted
+  const [touched, setTouched] = useState({});
+  const [submitted, setSubmitted] = useState(false);
 
-  const hasValue = config.fields.some(f => values[f]?.length > 0);
+  const set = (k, v) => setValues(p => ({ ...p, [k]: v }));
+  const touch = (k) => setTouched(p => ({ ...p, [k]: true }));
+
+  const getError = (field) => {
+    if (!touched[field] && !submitted) return '';
+    return VALIDATORS[field]?.(values[field]) ?? '';
+  };
+
+  const allValid = config.fields.every(f => !VALIDATORS[f]?.(values[f]));
+
+  const handleNext = () => {
+    setSubmitted(true);
+    // Mark all fields as touched to show all errors at once
+    const allTouched = config.fields.reduce((acc, f) => ({ ...acc, [f]: true }), {});
+    setTouched(allTouched);
+    if (allValid) navigate(config.next);
+  };
+
+  // Helper: input border color
+  const borderColor = (field) => {
+    const err = getError(field);
+    if (err) return '#ff3b30';
+    if (values[field]) return '#ff625d';
+    return '#dfdfdf';
+  };
 
   const renderField = (field) => {
+    const error = getError(field);
+
     switch (field) {
       case 'name':
         return (
           <div key="name" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>이름</p>
-            <input className="input-field" placeholder="홍길동" value={values.name} onChange={e => set('name', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="홍길동"
+              value={values.name}
+              onChange={e => set('name', e.target.value)}
+              onBlur={() => touch('name')}
+              style={{ borderColor: borderColor('name') }}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'year':
         return (
           <div key="year" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>태어난 연도</p>
             <div style={{ position: 'relative' }}>
-              <select className="input-field" style={{ appearance: 'none', paddingRight: 40 }}
-                value={values.year} onChange={e => set('year', e.target.value)}>
+              <select
+                className="input-field"
+                style={{ appearance: 'none', paddingRight: 40, borderColor: borderColor('year') }}
+                value={values.year}
+                onChange={e => { set('year', e.target.value); touch('year'); }}
+                onBlur={() => touch('year')}
+              >
                 <option value="">연도선택</option>
                 {Array.from({ length: 30 }, (_, i) => 2006 - i).map(y => (
                   <option key={y} value={y}>{y}년</option>
@@ -128,76 +200,151 @@ export default function Profile() {
                 <DropdownIcon />
               </div>
             </div>
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'gender':
         return (
-          <div key="gender">
+          <div key="gender" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>성별</p>
             <div style={{ display: 'flex', gap: 9 }}>
               {[{ val: 'male', label: '남성', type: 'male' }, { val: 'female', label: '여성', type: 'female' }].map(({ val, label, type }) => (
-                <button key={val} onClick={() => set('gender', val)} style={{
+                <button key={val} onClick={() => { set('gender', val); touch('gender'); }} style={{
                   flex: 1, height: 60, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: `2px solid ${values.gender === val ? '#ff625d' : '#dfdfdf'}`,
+                  border: `2px solid ${values.gender === val ? '#ff625d' : (error ? '#ff3b30' : '#dfdfdf')}`,
                   background: '#fff', fontSize: 18, fontWeight: 600,
                   color: values.gender === val ? '#ff625d' : '#cfcfcf',
-                  letterSpacing: -0.36, gap: 4,
+                  letterSpacing: -0.36, gap: 4, cursor: 'pointer',
                 }}>
                   {label}<GenderIcon type={type} />
                 </button>
               ))}
             </div>
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'phone':
         return (
           <div key="phone" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>연락처</p>
-            <input className="input-field" placeholder="010-0000-0000" value={values.phone} onChange={e => set('phone', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="010-0000-0000"
+              value={values.phone}
+              onChange={e => {
+                // Auto-format: insert dashes
+                let v = e.target.value.replace(/\D/g, '');
+                if (v.length > 3 && v.length <= 7) v = v.slice(0,3) + '-' + v.slice(3);
+                else if (v.length > 7) v = v.slice(0,3) + '-' + v.slice(3,7) + '-' + v.slice(7,11);
+                set('phone', v);
+              }}
+              onBlur={() => touch('phone')}
+              style={{ borderColor: borderColor('phone') }}
+              maxLength={13}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'school':
         return (
           <div key="school" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>학교</p>
-            <input className="input-field" placeholder="상명대학교 천안" value={values.school} onChange={e => set('school', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="상명대학교 천안"
+              value={values.school}
+              onChange={e => set('school', e.target.value)}
+              onBlur={() => touch('school')}
+              style={{ borderColor: borderColor('school') }}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'major':
         return (
-          <div key="major">
+          <div key="major" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>학과</p>
-            <input className="input-field" placeholder="커뮤니케이션 디자인" value={values.major} onChange={e => set('major', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="커뮤니케이션 디자인"
+              value={values.major}
+              onChange={e => set('major', e.target.value)}
+              onBlur={() => touch('major')}
+              style={{ borderColor: borderColor('major') }}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'studentId':
         return (
           <div key="studentId" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>학번</p>
-            <input className="input-field" placeholder="20XXXXXX" value={values.studentId} onChange={e => set('studentId', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="20XXXXXX"
+              value={values.studentId}
+              onChange={e => set('studentId', e.target.value)}
+              onBlur={() => touch('studentId')}
+              style={{ borderColor: borderColor('studentId') }}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'depositor':
         return (
-          <div key="depositor">
+          <div key="depositor" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>입금자명</p>
-            <input className="input-field" placeholder="홍길동" value={values.depositor} onChange={e => set('depositor', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="홍길동"
+              value={values.depositor}
+              onChange={e => set('depositor', e.target.value)}
+              onBlur={() => touch('depositor')}
+              style={{ borderColor: borderColor('depositor') }}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'mbti':
         return (
           <div key="mbti" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>MBTI</p>
-            <input className="input-field" placeholder="INFP" value={values.mbti} onChange={e => set('mbti', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="INFP"
+              value={values.mbti}
+              onChange={e => set('mbti', e.target.value.toUpperCase())}
+              onBlur={() => touch('mbti')}
+              style={{ borderColor: borderColor('mbti') }}
+              maxLength={4}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'height':
         return (
-          <div key="height">
+          <div key="height" style={{ marginBottom: 24 }}>
             <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>키</p>
-            <input className="input-field" placeholder="170cm" value={values.height} onChange={e => set('height', e.target.value)} />
+            <input
+              className="input-field"
+              placeholder="170cm"
+              value={values.height}
+              onChange={e => set('height', e.target.value)}
+              onBlur={() => touch('height')}
+              style={{ borderColor: borderColor('height') }}
+            />
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'payment':
         return (
           <div key="payment" style={{ marginBottom: 24 }}>
@@ -210,18 +357,21 @@ export default function Profile() {
               <p style={{ fontSize: 14, color: '#888', marginTop: 4 }}>예금주: 멋쟁이사자처럼</p>
             </div>
             <button
-              onClick={() => set('payment', 'done')}
+              onClick={() => { set('payment', 'done'); touch('payment'); }}
               style={{
                 width: '100%', height: 52, background: values.payment === 'done' ? '#ff625d' : '#f0f0f0',
                 borderRadius: 10, fontSize: 16, fontWeight: 600,
                 color: values.payment === 'done' ? '#fff' : '#999',
-                border: 'none', cursor: 'pointer',
+                border: error ? '2px solid #ff3b30' : 'none',
+                cursor: 'pointer',
               }}
             >
               {values.payment === 'done' ? '✓ 입금 완료' : '입금 완료했어요'}
             </button>
+            <ErrorMsg msg={error} />
           </div>
         );
+
       case 'photo':
         return (
           <div key="photo" style={{ display: 'flex', justifyContent: 'center' }}>
@@ -246,6 +396,7 @@ export default function Profile() {
             </div>
           </div>
         );
+
       default:
         return null;
     }
@@ -287,9 +438,9 @@ export default function Profile() {
 
       {/* CTA */}
       <button
-        className={`btn-primary${hasValue ? '' : ' btn-primary--disabled'}`}
+        className={`btn-primary${allValid ? '' : ' btn-primary--disabled'}`}
         style={{ position: 'absolute', bottom: 62, left: 20 }}
-        onClick={() => hasValue && navigate(config.next)}
+        onClick={handleNext}
       >
         다음으로
       </button>

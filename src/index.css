@@ -209,7 +209,6 @@ p { margin: 0; }
   color: var(--color-text-disabled);
   font-weight: 500;
   cursor: default;
-  pointer-events: none;
 }
 
 /* ===== Input ===== */
