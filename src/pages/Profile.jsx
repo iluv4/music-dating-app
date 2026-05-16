@@ -37,28 +37,12 @@ const STEPS = {
     fields: ['studentId', 'depositor'],
     next: '/profile/17',
   },
-  17: {
-    dots: [1, 1, 1, 1],
-    heading: ['', '추가 정보', '를 '],
-    heading2: '작성해주세요!',
-    subtitle: 'MBTI와 키를 입력해주세요.',
-    fields: ['mbti', 'height'],
-    next: '/profile/18',
-  },
   18: {
     dots: [1, 1, 1, 1],
     heading: ['', '입금 완료 여부', '를 '],
     heading2: '확인해주세요!',
     subtitle: '아래 계좌로 입금 후 확인해주세요.',
     fields: ['payment'],
-    next: '/profile/19',
-  },
-  19: {
-    dots: [1, 1, 1, 1],
-    heading: ['', '프로필 사진', '을 '],
-    heading2: '업로드해주세요!',
-    subtitle: '나를 잘 나타내는 사진을 업로드해주세요.',
-    fields: ['photo'],
     next: '/genre-select',
   },
 };
@@ -73,10 +57,7 @@ const VALIDATORS = {
   major:     v => v.trim().length < 1 ? '학과를 입력해요' : '',
   studentId: v => !/^\d{6,10}$/.test(v) ? '학번은 숫자로만 입력해요' : '',
   depositor: v => v.trim().length < 1 ? '입금자 이름을 입력해요' : '',
-  mbti:      v => !/^[EI][NS][TF][JP]$/i.test(v) ? 'INFP처럼 4글자로 입력해요' : '',
-  height:    v => !/^\d{2,3}(cm)?$/.test(v.trim()) ? '숫자로 입력해요 (예: 170)' : '',
   payment:   v => !v ? '입금 완료를 눌러요' : '',
-  photo:     () => '',
 };
 
 const DropdownIcon = () => (
@@ -125,8 +106,7 @@ export default function Profile() {
     name: '', year: '', gender: '',
     phone: '', school: '', major: '',
     studentId: '', depositor: '',
-    mbti: '', height: '',
-    payment: '', photo: '',
+    payment: '',
   });
 
   // Track which fields the user has blurred or submitted
@@ -312,39 +292,6 @@ export default function Profile() {
           </div>
         );
 
-      case 'mbti':
-        return (
-          <div key="mbti" style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>MBTI</p>
-            <input
-              className="input-field"
-              placeholder="INFP"
-              value={values.mbti}
-              onChange={e => set('mbti', e.target.value.toUpperCase())}
-              onBlur={() => touch('mbti')}
-              style={{ borderColor: borderColor('mbti') }}
-              maxLength={4}
-            />
-            <ErrorMsg msg={error} />
-          </div>
-        );
-
-      case 'height':
-        return (
-          <div key="height" style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, letterSpacing: -0.32 }}>키</p>
-            <input
-              className="input-field"
-              placeholder="170cm"
-              value={values.height}
-              onChange={e => set('height', e.target.value)}
-              onBlur={() => touch('height')}
-              style={{ borderColor: borderColor('height') }}
-            />
-            <ErrorMsg msg={error} />
-          </div>
-        );
-
       case 'payment':
         return (
           <div key="payment" style={{ marginBottom: 24 }}>
@@ -369,31 +316,6 @@ export default function Profile() {
               {values.payment === 'done' ? '✓ 입금 완료' : '입금 완료했어요'}
             </button>
             <ErrorMsg msg={error} />
-          </div>
-        );
-
-      case 'photo':
-        return (
-          <div key="photo" style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{
-              width: 180, height: 180, borderRadius: 12,
-              background: '#f0f0f0', border: '2px dashed #dfdfdf',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', gap: 8,
-            }} onClick={() => set('photo', 'uploaded')}>
-              {values.photo ? (
-                <p style={{ fontSize: 16, color: '#ff625d', fontWeight: 600 }}>✓ 업로드 완료</p>
-              ) : (
-                <>
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <circle cx="20" cy="20" r="19" stroke="#dfdfdf" strokeWidth="2"/>
-                    <line x1="20" y1="12" x2="20" y2="28" stroke="#dfdfdf" strokeWidth="2" strokeLinecap="round"/>
-                    <line x1="12" y1="20" x2="28" y2="20" stroke="#dfdfdf" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                  <p style={{ fontSize: 13, color: '#bbb' }}>사진 업로드</p>
-                </>
-              )}
-            </div>
           </div>
         );
 
