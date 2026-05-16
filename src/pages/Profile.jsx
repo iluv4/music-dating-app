@@ -65,17 +65,17 @@ const STEPS = {
 
 // Validation rules per field
 const VALIDATORS = {
-  name:      v => v.trim().length < 1 ? '이름을 입력해주세요.' : '',
-  year:      v => !v ? '태어난 연도를 선택해주세요.' : '',
-  gender:    v => !v ? '성별을 선택해주세요.' : '',
-  phone:     v => !/^010-\d{4}-\d{4}$/.test(v) ? '올바른 형식으로 입력해주세요. (예: 010-1234-5678)' : '',
-  school:    v => v.trim().length < 1 ? '학교명을 입력해주세요.' : '',
-  major:     v => v.trim().length < 1 ? '학과를 입력해주세요.' : '',
-  studentId: v => !/^\d{6,10}$/.test(v) ? '숫자로 된 학번을 입력해주세요. (6~10자리)' : '',
-  depositor: v => v.trim().length < 1 ? '입금자명을 입력해주세요.' : '',
-  mbti:      v => !/^[EI][NS][TF][JP]$/i.test(v) ? 'MBTI를 올바르게 입력해주세요. (예: INFP)' : '',
-  height:    v => !/^\d{2,3}(cm)?$/.test(v.trim()) ? '키를 숫자로 입력해주세요. (예: 170 또는 170cm)' : '',
-  payment:   v => !v ? '입금 완료 버튼을 눌러주세요.' : '',
+  name:      v => v.trim().length < 1 ? '이름을 입력해요' : '',
+  year:      v => !v ? '태어난 연도를 선택해요' : '',
+  gender:    v => !v ? '성별을 선택해요' : '',
+  phone:     v => !/^010-\d{4}-\d{4}$/.test(v) ? '010-0000-0000 형식으로 입력해요' : '',
+  school:    v => v.trim().length < 1 ? '학교 이름을 입력해요' : '',
+  major:     v => v.trim().length < 1 ? '학과를 입력해요' : '',
+  studentId: v => !/^\d{6,10}$/.test(v) ? '학번은 숫자로만 입력해요' : '',
+  depositor: v => v.trim().length < 1 ? '입금자 이름을 입력해요' : '',
+  mbti:      v => !/^[EI][NS][TF][JP]$/i.test(v) ? 'INFP처럼 4글자로 입력해요' : '',
+  height:    v => !/^\d{2,3}(cm)?$/.test(v.trim()) ? '숫자로 입력해요 (예: 170)' : '',
+  payment:   v => !v ? '입금 완료를 눌러요' : '',
   photo:     () => '',
 };
 
