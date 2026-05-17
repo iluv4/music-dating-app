@@ -3,6 +3,12 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import posthog from 'posthog-js'
+import * as amplitude from '@amplitude/unified'
+
+amplitude.initAll('5262ec36913a7ccf47f75873b39ce925', {
+  analytics: { autocapture: true },
+  sessionReplay: { sampleRate: 1 },
+})
 
 posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
