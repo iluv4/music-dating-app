@@ -1,4 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import posthog from 'posthog-js';
 import Splash from './pages/Splash';
 import Welcome from './pages/Welcome';
 import Terms from './pages/Terms';
@@ -11,9 +13,18 @@ import ChatRoom from './pages/ChatRoom';
 import Notifications from './pages/Notifications';
 import MyPage from './pages/MyPage';
 
+function PageViewTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    posthog.capture('$pageview');
+  }, [location]);
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <PageViewTracker />
       <div className="app-shell">
         <Routes>
           <Route path="/" element={<Splash />} />
