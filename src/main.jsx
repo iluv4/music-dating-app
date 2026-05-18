@@ -15,6 +15,9 @@ posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
   defaults: '2026-01-30',
   person_profiles: 'identified_only',
   enable_heatmaps: true,
+  autocapture: true,
+  capture_pageview: true,
+  capture_pageleave: true,
   session_recording: {
     maskAllInputs: false,
   },
