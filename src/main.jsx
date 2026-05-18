@@ -14,6 +14,7 @@ posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_KEY, {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
   defaults: '2026-01-30',
   person_profiles: 'identified_only',
+  enable_heatmaps: true,
   session_recording: {
     maskAllInputs: false,
   },
